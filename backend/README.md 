@@ -1,11 +1,33 @@
-1. Copy .env.example to .env and fill values.
-2. Run `npm install`.
-3. Create DB and run db/schema.sql on your Azure SQL (or local SQL Server).
-4. Start: `npm run dev` (requires nodemon) or `npm start`.
+Inventory Starter (Node.js + SQLite dev / Azure SQL prod)
 
+Quick start (SQLite local):
+1. Copy .env.example to .env and edit if needed.
+2. npm install
+3. npm run dev:sqlite
+4. Server runs on http://localhost:3000
+
+If USE_SQLITE=true the app will initialize the sqlite DB file and schema automatically.
+
+Production with Azure SQL:
+- Set USE_SQLITE=false and fill DB_* vars in environment (do NOT use .env in production).
+- Ensure Azure SQL firewall allows App Service or your IP.
+- Store JWT_SECRET and DB credentials in App Service settings or Key Vault.
 
 
 Use Azure App Service or Azure Functions (with HTTP) to deploy. Put DB credentials into App Service Configuration or Key Vault, not code.
 For local development you can run SQL Server in Docker: mcr.microsoft.com/mssql/server.
 Add pagination, filtering, and tests as needed.
 Consider using stored procedures for complex logic and ensure least-privilege DB user.
+
+
+```Run: npm install```
+
+Local dev (sqlite): copy .env.example -> .env, ensure USE_SQLITE=true, then npm run dev:sqlite. The sqlite DB file will be created and initialized.
+
+Production: set USE_SQLITE=false and provide Azure SQL env vars; deploy to Azure App Service and set environment variables there.
+
+Endpoints:
+POST /api/auth/register { email, password, display_name? }
+POST /api/auth/login { email, password } -> returns { token, user }
+Use Authorization: Bearer for /api/products routes
+GET /api/products?skip=0&take=25&search=term&minQty=0&maxQty=100&sort=price_desc

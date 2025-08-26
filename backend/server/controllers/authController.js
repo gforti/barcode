@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const userModel = require('../models/userModel');
+const users = require('../models/users');
 
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -22,11 +22,11 @@ function signToken(user) {
 async function register(req, res, next) {
   try {
     const payload = await registerSchema.validateAsync(req.body);
-    const existing = await userModel.getUserByEmail(payload.email);
+    const existing = await users.getUserByEmail(payload.email);
     if (existing) return res.status(409).json({ message: 'Email already registered' });
     const hash = await bcrypt.hash(payload.password, 10);
-    const created = await userModel.createUser({ email: payload.email, passwordHash: hash, displayName: payload.display_name });
-    const user = await userModel.getUserById(created.id);
+    const created = await users.createUser({ email: payload.email, passwordHash: hash, displayName: payload.display_name });
+    const user = await users.getUserById(created.id || created.id);
     const token = signToken(user);
     res.status(201).json({ token, user });
   } catch (err) { next(err); }
@@ -35,7 +35,7 @@ async function register(req, res, next) {
 async function login(req, res, next) {
   try {
     const payload = await loginSchema.validateAsync(req.body);
-    const user = await userModel.getUserByEmail(payload.email);
+    const user = await users.getUserByEmail(payload.email);
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
     const ok = await bcrypt.compare(payload.password, user.password_hash);
     if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
