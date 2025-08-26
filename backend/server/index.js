@@ -1,12 +1,17 @@
 const express = require('express');
 require('dotenv').config();
 const products = require('./routes/products');
+const authRoutes = require('./routes/auth');
 const errorHandler = require('./middleware/errorHandler');
+const { authenticate } = require('./middleware/authMiddleware');
 
 const app = express();
 app.use(express.json());
 
-app.use('/api/products', products);
+app.use('/api/auth', authRoutes);
+
+// protect product routes
+app.use('/api/products', authenticate, products);
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
